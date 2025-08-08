@@ -21,6 +21,10 @@
         <label :for="'end-' + index" class="text-sm text-gray-600">To:</label>
         <Input
           :id="'end-' + index"
+          :class="{
+            'border-red-500 focus:border-red-500': isInvalidTimeWindow(window),
+          }"
+          :min="window.start || '00:00'"
           :model-value="window.end"
           class="w-32"
           type="time"
@@ -28,6 +32,9 @@
             (value: string | number) => onUpdateTimeWindow(index, 'end', String(value))
           "
         />
+      </div>
+      <div v-if="isInvalidTimeWindow(window)" class="text-red-500 text-xs w-full">
+        End time must be at least 30 minutes after start time
       </div>
       <Button
         v-if="modelValue.length > 1"
@@ -65,4 +72,18 @@ interface Props {
 }
 
 defineProps<Props>()
+
+const timeToMinutes = (timeString: string): number => {
+  const [hours, minutes] = timeString.split(':').map(Number)
+  return hours * 60 + minutes
+}
+
+const isInvalidTimeWindow = (window: TimeWindow): boolean => {
+  if (!window.start || !window.end) return false
+
+  const startMinutes = timeToMinutes(window.start)
+  const endMinutes = timeToMinutes(window.end)
+
+  return endMinutes < startMinutes + 30
+}
 </script>

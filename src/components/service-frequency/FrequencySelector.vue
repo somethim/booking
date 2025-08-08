@@ -50,7 +50,6 @@ const formatValue = (value: FrequencyType) => {
   if (value === 'never') {
     return 'None'
   }
-
   return value.charAt(0).toUpperCase() + value.slice(1)
 }
 </script>

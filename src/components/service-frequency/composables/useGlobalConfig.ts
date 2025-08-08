@@ -45,8 +45,7 @@ export function useGlobalConfig() {
 
   const updateTimeWindow = (index: number, field: keyof TimeWindow, value: string) => {
     timeWindows.value[index] = {
-      ...timeWindows.value[index],
-      [field]: value,
+      ...timeWindows.value[index], [field]: value,
     }
   }
 
@@ -72,10 +71,7 @@ export function useGlobalConfig() {
   }
 
   const getDaysConfig = (selectedDays: string[]): Record<string, TimeConfig[]> => {
-    if (
-      (!specifyTimeWindows.value || !timeWindows.value.some((tw) => tw.start || tw.end)) &&
-      (!exactTime.value || !exactTimeValue.value)
-    ) {
+    if ((!specifyTimeWindows.value || !timeWindows.value.some((tw) => tw.start || tw.end)) && (!exactTime.value || !exactTimeValue.value)) {
       return Object.fromEntries(selectedDays.map((day) => [day, []]))
     }
 

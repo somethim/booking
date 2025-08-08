@@ -7,10 +7,10 @@
       </CardHeader>
 
       <CardContent class="space-y-4">
-        <FrequencySelector :model-value="frequency" @update:model-value="handleFrequencyChange" />
+        <FrequencySelector :model-value="frequency" @update:model-value="handleFrequencyChange"/>
 
         <div v-if="showCustomSection" class="pt-8 space-y-4">
-          <CustomDaysSelector :model-value="selectedDays" :on-toggle-day="handleToggleDay" />
+          <CustomDaysSelector :model-value="selectedDays" :on-toggle-day="handleToggleDay"/>
 
           <div v-if="selectedDays.length > 0" class="pt-2">
             <ConfigurationTypeSelector
@@ -73,15 +73,15 @@
         <CardDescription class="text-sm">Generated configuration JSON</CardDescription>
       </CardHeader>
       <CardContent>
-        <ConfigOutput :config="jsonConfig" />
+        <ConfigOutput :config="jsonConfig"/>
       </CardContent>
     </Card>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watchEffect } from 'vue'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {computed, ref, watchEffect} from 'vue'
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card'
 import FrequencySelector from './FrequencySelector.vue'
 import CustomDaysSelector from './CustomDaysSelector.vue'
 import ConfigurationTypeSelector from './ConfigurationTypeSelector.vue'
@@ -89,8 +89,8 @@ import IndividualDayManager from './managers/IndividualDayManager.vue'
 import TimeWindowsManager from './managers/TimeWindowsManager.vue'
 import ExactTimeManager from './managers/ExactTimeManager.vue'
 import ConfigOutput from './ConfigOutput.vue'
-import { useIndividualDayConfig } from './composables/useIndividualDayConfig'
-import { useGlobalConfig } from './composables/useGlobalConfig'
+import {useIndividualDayConfig} from './composables/useIndividualDayConfig'
+import {useGlobalConfig} from './composables/useGlobalConfig'
 import {
   type DayOfWeek,
   type FrequencyType,
@@ -98,8 +98,8 @@ import {
   type ServiceConfigType,
   type ServiceFrequencyConfig,
 } from './types.ts'
-import { Button } from '@/components/ui/button'
-import { toast } from 'vue-sonner'
+import {Button} from '@/components/ui/button'
+import {toast} from 'vue-sonner'
 
 interface Props {
   scheduleConfig?: string | null
@@ -206,7 +206,7 @@ const handleToggleDay = (day: DayOfWeek): void => {
 
 const jsonConfig = computed<ServiceFrequencyConfig>(() => {
   if (frequency.value !== 'custom' || selectedDays.value.length === 0) {
-    return { frequency: frequency.value }
+    return {frequency: frequency.value}
   }
 
   if (configType.value === 'individual') {

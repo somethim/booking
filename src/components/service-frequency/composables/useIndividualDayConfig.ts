@@ -1,5 +1,5 @@
-import { ref } from 'vue'
-import { type DayOfWeek, type TimeConfig, type TimeWindow } from '../types.ts'
+import {ref} from 'vue'
+import {type DayOfWeek, type TimeConfig, type TimeWindow} from '../types.ts'
 
 export function useIndividualDayConfig() {
   const individualDays = ref<DayOfWeek[]>([])
@@ -25,7 +25,7 @@ export function useIndividualDayConfig() {
         dayTimeWindows.value[day] = timeWindowConfigs
       } else {
         dayTimeWindowsEnabled.value[day] = false
-        dayTimeWindows.value[day] = [{ start: '', end: '' }]
+        dayTimeWindows.value[day] = [{start: '', end: ''}]
       }
 
       const exactTimeConfig = dayConfigs.find((config) => 'exactTime' in config)
@@ -67,7 +67,7 @@ export function useIndividualDayConfig() {
       if (!dayTimeWindows.value[day]) {
         dayTimeWindows.value = {
           ...dayTimeWindows.value,
-          [day]: [{ start: '', end: '' }],
+          [day]: [{start: '', end: ''}],
         }
       }
       if (!dayExactTimes.value[day]) {
@@ -82,7 +82,7 @@ export function useIndividualDayConfig() {
   const toggleDayTimeWindows = (day: DayOfWeek, enabled: boolean) => {
     dayTimeWindowsEnabled.value[day] = enabled
     if (!enabled) {
-      dayTimeWindows.value[day] = [{ start: '', end: '' }]
+      dayTimeWindows.value[day] = [{start: '', end: ''}]
     }
   }
 
@@ -104,7 +104,7 @@ export function useIndividualDayConfig() {
   }
 
   const addDayTimeWindow = (day: DayOfWeek) => {
-    const updatedTimeWindows = [...dayTimeWindows.value[day], { start: '', end: '' }]
+    const updatedTimeWindows = [...dayTimeWindows.value[day], {start: '', end: ''}]
     dayTimeWindows.value = {
       ...dayTimeWindows.value,
       [day]: updatedTimeWindows,
@@ -147,7 +147,7 @@ export function useIndividualDayConfig() {
       }
 
       if (dayExactTimes.value[day] && dayExactTimes.value[day].trim()) {
-        timeConfigs.push({ exactTime: dayExactTimes.value[day] })
+        timeConfigs.push({exactTime: dayExactTimes.value[day]})
       }
 
       if (timeConfigs.length > 0) {
@@ -159,7 +159,7 @@ export function useIndividualDayConfig() {
   }
 
   const getDayTimeWindows = (day: DayOfWeek): TimeWindow[] => {
-    return dayTimeWindows.value[day] || [{ start: '', end: '' }]
+    return dayTimeWindows.value[day] || [{start: '', end: ''}]
   }
 
   const getDayExactTime = (day: DayOfWeek): string => {

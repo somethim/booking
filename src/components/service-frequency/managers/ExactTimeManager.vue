@@ -3,7 +3,6 @@
     <Input
       :model-value="modelValue"
       class="w-32"
-      placeholder="13:30"
       type="time"
       @update:model-value="(value: string | number) => onUpdateValue(String(value))"
     />
