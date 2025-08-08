@@ -119,7 +119,7 @@ const globalConfig = useGlobalConfig()
 watchEffect(() => {
   if (!props.scheduleConfig) return
 
-  const parsedConfig: ServiceFrequencyConfig = JSON.parse(props.scheduleConfig)
+  const parsedConfig = JSON.parse(props.scheduleConfig) as ServiceFrequencyConfig
 
   if (!parsedConfig.frequency || !SERVICE_FREQUENCY_OPTIONS.includes(parsedConfig.frequency)) return
 
