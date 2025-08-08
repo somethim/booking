@@ -1,71 +1,105 @@
 <template>
-  <div class="w-[60vw] h-[60vh] flex gap-6">
-    <!-- Main Configuration Card -->
+  <div class="w-[70vw] flex gap-4">
     <Card class="border border-gray-200 shadow-sm flex-1 overflow-y-auto">
       <CardHeader>
         <CardTitle class="text-xl">Service Frequency</CardTitle>
         <CardDescription class="text-sm">Select how often to service the toilet</CardDescription>
       </CardHeader>
 
-      <CardContent>
-        <FrequencySelector
-          :model-value="frequency"
-          @update:model-value="handleFrequencyChange"
-        />
+      <CardContent class="space-y-4">
+        <FrequencySelector :model-value="frequency" @update:model-value="handleFrequencyChange" />
 
-        <div v-if="showCustomSection" class="pt-8 space-y-6">
-          <CustomDaysSelector
-            :model-value="customDays"
-            @update:model-value="customDays = $event"
-          />
+        <div v-if="showCustomSection" class="pt-8 space-y-4">
+          <CustomDaysSelector :model-value="selectedDays" :on-toggle-day="handleToggleDay" />
 
-          <TimeWindowsManager
-            :enabled="specifyTimeWindows"
-            :model-value="timeWindows"
-            class="pt-6"
-            @update:model-value="timeWindows = $event"
-            @update:enabled="specifyTimeWindows = $event"
-          />
+          <div v-if="selectedDays.length > 0" class="pt-2">
+            <ConfigurationTypeSelector
+              :model-value="configType"
+              @update:model-value="handleConfigTypeChange"
+            />
+          </div>
 
-          <ExactTimeSelector
-            :enabled="exactTime"
-            :model-value="exactTimeValue"
-            class="pt-6"
-            @update:model-value="exactTimeValue = $event"
-            @update:enabled="exactTime = $event"
-          />
+          <div v-if="configType === 'exact_time' && selectedDays.length > 0" class="pt-2">
+            <ExactTimeManager
+              :enabled="globalConfig.exactTime.value"
+              :model-value="globalConfig.exactTimeValue.value"
+              :on-toggle-enabled="globalConfig.toggleExactTime"
+              :on-update-value="globalConfig.updateExactTime"
+            />
+          </div>
+
+          <div v-if="configType === 'time_windows' && selectedDays.length > 0" class="pt-2">
+            <TimeWindowsManager
+              :enabled="globalConfig.specifyTimeWindows.value"
+              :model-value="globalConfig.timeWindows.value"
+              :on-add-time-window="globalConfig.addTimeWindow"
+              :on-remove-time-window="globalConfig.removeTimeWindow"
+              :on-toggle-enabled="globalConfig.toggleTimeWindows"
+              :on-update-time-window="globalConfig.updateTimeWindow"
+            />
+          </div>
+
+          <div v-if="configType === 'individual' && selectedDays.length > 0" class="pt-2">
+            <IndividualDayManager
+              :day-configs="individualDayConfig.getDayConfigs()"
+              :enabled-days="individualDayConfig.individualDays.value"
+              :get-day-exact-time="individualDayConfig.getDayExactTime"
+              :get-day-time-windows="individualDayConfig.getDayTimeWindows"
+              :on-add-time-window="individualDayConfig.addDayTimeWindow"
+              :on-remove-time-window="individualDayConfig.removeDayTimeWindow"
+              :on-toggle-day="individualDayConfig.toggleIndividualDay"
+              :on-update-exact-time="individualDayConfig.updateDayExactTime"
+              :on-update-time-window="individualDayConfig.updateDayTimeWindow"
+              :selected-days="selectedDays"
+            />
+          </div>
         </div>
       </CardContent>
+
+      <div class="flex justify-start p-4">
+        <Button
+          @click="
+            toast('Config saved', { description: 'Configuration has been saved successfully' })
+          "
+        >
+          Save Configuration
+        </Button>
+      </div>
     </Card>
 
-    <!-- Config Output Card -->
     <Card class="border border-gray-200 shadow-sm w-1/2 overflow-y-auto">
       <CardHeader class="pb-4">
         <CardTitle class="text-xl">Configuration Output</CardTitle>
         <CardDescription class="text-sm">Generated configuration JSON</CardDescription>
       </CardHeader>
       <CardContent>
-        <ConfigOutput :config="jsonConfig"/>
+        <ConfigOutput :config="jsonConfig" />
       </CardContent>
     </Card>
   </div>
 </template>
 
 <script lang="ts" setup>
-import {computed, ref, watchEffect} from 'vue'
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card'
+import { computed, ref, watchEffect } from 'vue'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import FrequencySelector from './FrequencySelector.vue'
 import CustomDaysSelector from './CustomDaysSelector.vue'
-import TimeWindowsManager from './TimeWindowsManager.vue'
-import ExactTimeSelector from './ExactTimeSelector.vue'
+import ConfigurationTypeSelector from './ConfigurationTypeSelector.vue'
+import IndividualDayManager from './managers/IndividualDayManager.vue'
+import TimeWindowsManager from './managers/TimeWindowsManager.vue'
+import ExactTimeManager from './managers/ExactTimeManager.vue'
 import ConfigOutput from './ConfigOutput.vue'
+import { useIndividualDayConfig } from './composables/useIndividualDayConfig'
+import { useGlobalConfig } from './composables/useGlobalConfig'
 import {
   type DayOfWeek,
   type FrequencyType,
   SERVICE_FREQUENCY_OPTIONS,
+  type ServiceConfigType,
   type ServiceFrequencyConfig,
-  type TimeWindow,
 } from './types.ts'
+import { Button } from '@/components/ui/button'
+import { toast } from 'vue-sonner'
 
 interface Props {
   scheduleConfig?: string | null
@@ -75,38 +109,49 @@ const props = withDefaults(defineProps<Props>(), {
   scheduleConfig: null,
 })
 
-const frequency = ref<FrequencyType>('custom')
-const customDays = ref<DayOfWeek[]>([])
-const specifyTimeWindows = ref<boolean>(false)
-const timeWindows = ref<TimeWindow[]>([{start: '', end: ''}])
-const exactTime = ref<boolean>(false)
-const exactTimeValue = ref<string>('')
+const frequency = ref<FrequencyType>('fortnightly')
+const selectedDays = ref<DayOfWeek[]>([])
+const configType = ref<ServiceConfigType>('exact_time')
+
+const individualDayConfig = useIndividualDayConfig()
+const globalConfig = useGlobalConfig()
 
 watchEffect(() => {
-  if (props.scheduleConfig) {
-    const parsedConfig: ServiceFrequencyConfig = JSON.parse(props.scheduleConfig)
+  if (!props.scheduleConfig) return
 
-    if (parsedConfig.frequency && SERVICE_FREQUENCY_OPTIONS.includes(parsedConfig.frequency)) {
-      frequency.value = parsedConfig.frequency
-    }
+  const parsedConfig: ServiceFrequencyConfig = JSON.parse(props.scheduleConfig)
 
-    if (parsedConfig.frequency === 'custom' && parsedConfig.customDays) {
-      customDays.value = parsedConfig.customDays
-    }
+  if (!parsedConfig.frequency || !SERVICE_FREQUENCY_OPTIONS.includes(parsedConfig.frequency)) return
 
-    if (
-      parsedConfig.frequency === 'custom' &&
-      parsedConfig.timeWindows &&
-      parsedConfig.timeWindows.length > 0
-    ) {
-      specifyTimeWindows.value = true
-      timeWindows.value = parsedConfig.timeWindows
-    }
+  frequency.value = parsedConfig.frequency
 
-    if (parsedConfig.frequency === 'custom' && parsedConfig.exactTime) {
-      exactTime.value = true
-      exactTimeValue.value = parsedConfig.exactTime
-    }
+  if (parsedConfig.frequency !== 'custom' || !parsedConfig.days) return
+
+  selectedDays.value = Object.keys(parsedConfig.days) as DayOfWeek[]
+
+  const hasIndividualConfigs = Object.values(parsedConfig.days).some((configs) =>
+    configs.some((config) => 'start' in config || 'exactTime' in config),
+  )
+  if (hasIndividualConfigs) {
+    configType.value = 'individual'
+    individualDayConfig.initializeFromConfig(selectedDays.value, parsedConfig.days)
+    return
+  }
+
+  const firstDay = Object.values(parsedConfig.days)[0]
+  if (!firstDay || firstDay.length === 0) return
+
+  const hasTimeWindows = firstDay.some((config) => 'start' in config && 'end' in config)
+  if (hasTimeWindows) {
+    configType.value = 'time_windows'
+    globalConfig.initializeFromConfig(parsedConfig.days)
+    return
+  }
+
+  const hasExactTime = firstDay.some((config) => 'exactTime' in config)
+  if (hasExactTime) {
+    configType.value = 'exact_time'
+    globalConfig.initializeFromConfig(parsedConfig.days)
   }
 })
 
@@ -116,31 +161,64 @@ const handleFrequencyChange = (newFrequency: FrequencyType): void => {
   frequency.value = newFrequency
 
   if (newFrequency !== 'custom') {
-    customDays.value = []
-    specifyTimeWindows.value = false
-    exactTime.value = false
-    exactTimeValue.value = ''
-    timeWindows.value = [{start: '', end: ''}]
+    selectedDays.value = []
+    configType.value = 'exact_time'
+    individualDayConfig.reset()
+    globalConfig.reset()
+  }
+}
+
+const handleConfigTypeChange = (newType: ServiceConfigType): void => {
+  configType.value = newType
+
+  if (newType === 'individual') {
+    globalConfig.reset()
+    selectedDays.value.forEach((day) => {
+      individualDayConfig.toggleIndividualDay(day)
+    })
+  }
+
+  if (newType === 'exact_time') {
+    globalConfig.reset()
+    individualDayConfig.reset()
+    globalConfig.toggleExactTime(true)
+  }
+
+  if (newType === 'time_windows') {
+    globalConfig.reset()
+    individualDayConfig.reset()
+    globalConfig.toggleTimeWindows(true)
+  }
+}
+
+const handleToggleDay = (day: DayOfWeek): void => {
+  if (selectedDays.value.includes(day)) {
+    selectedDays.value = selectedDays.value.filter((d) => d !== day)
+    individualDayConfig.removeDay(day)
+  } else {
+    selectedDays.value.push(day)
+
+    if (configType.value === 'individual') {
+      individualDayConfig.toggleIndividualDay(day)
+    }
   }
 }
 
 const jsonConfig = computed<ServiceFrequencyConfig>(() => {
-  const config: ServiceFrequencyConfig = {
+  if (frequency.value !== 'custom' || selectedDays.value.length === 0) {
+    return { frequency: frequency.value }
+  }
+
+  if (configType.value === 'individual') {
+    return {
+      frequency: frequency.value,
+      days: individualDayConfig.getDayConfigs(),
+    }
+  }
+
+  return {
     frequency: frequency.value,
+    days: globalConfig.getDaysConfig(selectedDays.value),
   }
-
-  if (frequency.value === 'custom') {
-    config.customDays = customDays.value
-
-    if (specifyTimeWindows.value && timeWindows.value.some((tw) => tw.start || tw.end)) {
-      config.timeWindows = timeWindows.value.filter((tw) => tw.start || tw.end)
-    }
-
-    if (exactTime.value && exactTimeValue.value) {
-      config.exactTime = exactTimeValue.value
-    }
-  }
-
-  return config
 })
 </script>

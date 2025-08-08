@@ -1,6 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import './base.css';
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -9,6 +10,8 @@
   margin: 0 auto;
   padding: 2rem;
   font-weight: normal;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.04em;
 }
 
 a,

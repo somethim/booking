@@ -1,10 +1,10 @@
 <template>
-  <div class="space-y-3">
+  <div class="space-y-2">
     <RadioGroup :model-value="modelValue" @update:model-value="handleValueChange">
       <div
         v-for="option in SERVICE_FREQUENCY_OPTIONS"
         :key="option"
-        class="flex items-center space-x-2"
+        class="flex items-center space-x-2 py-0.5"
       >
         <RadioGroupItem :id="option" :value="option"/>
         <label
@@ -39,10 +39,16 @@ const handleValueChange = (value: string | number) => {
 
 const formatValue = (value: FrequencyType) => {
   if (value === 'custom') {
-    return 'Custom Days'
+    return 'Custom'
   }
-  if (value === 'every4weeks') {
-    return 'Every 4 Weeks'
+  if (value === 'fortnightly') {
+    return 'Fortnightly (every 2 weeks)'
+  }
+  if (value === 'every_4_weeks') {
+    return 'Every 4 weeks'
+  }
+  if (value === 'never') {
+    return 'None'
   }
 
   return value.charAt(0).toUpperCase() + value.slice(1)

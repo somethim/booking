@@ -1,13 +1,16 @@
 <script lang="ts">
 import {defineComponent} from 'vue'
 import ServiceFrequency from '@/components/service-frequency/ServiceFrequency.vue'
+import 'vue-sonner/style.css'
+import {Toaster} from "@/components/ui/sonner";
 
 export default defineComponent({
-  components: {ServiceFrequency},
+  components: {Toaster, ServiceFrequency},
 })
 </script>
 
 <template>
+  <Toaster/>
   <ServiceFrequency/>
 </template>
 
