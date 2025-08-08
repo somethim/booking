@@ -1,9 +1,9 @@
 <script lang="ts">
-import {defineComponent} from "vue";
-import ServiceFrequency from "@/components/ServiceFrequency.vue";
+import {defineComponent} from 'vue'
+import ServiceFrequency from '@/components/service-frequency/ServiceFrequency.vue'
 
 export default defineComponent({
-  components: {ServiceFrequency}
+  components: {ServiceFrequency},
 })
 </script>
 
