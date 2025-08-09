@@ -53,7 +53,7 @@
 <script lang="ts" setup>
 import TimeWindowsManager from './TimeWindowsManager.vue'
 import ExactTimeManager from './ExactTimeManager.vue'
-import {type DayOfWeek, type TimeConfig, type TimeWindow} from '../types.ts'
+import {type DayOfWeek, type TimeConfig, type TimeWindow} from '../types'
 import {RadioGroup, RadioGroupItem} from '@/components/ui/radio-group'
 import {ref} from 'vue'
 
