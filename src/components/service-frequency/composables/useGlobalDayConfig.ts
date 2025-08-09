@@ -1,7 +1,7 @@
 import {ref} from 'vue'
 import {type TimeConfig, type TimeWindow} from '../types.ts'
 
-export function useGlobalConfig() {
+export function useGlobalDayConfig() {
   const specifyTimeWindows = ref<boolean>(false)
   const timeWindows = ref<TimeWindow[]>([{start: '', end: ''}])
   const exactTime = ref<boolean>(false)

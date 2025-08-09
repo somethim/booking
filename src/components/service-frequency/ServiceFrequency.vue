@@ -90,7 +90,7 @@ import TimeWindowsManager from './managers/TimeWindowsManager.vue'
 import ExactTimeManager from './managers/ExactTimeManager.vue'
 import ConfigOutput from './ConfigOutput.vue'
 import {useIndividualDayConfig} from './composables/useIndividualDayConfig'
-import {useGlobalConfig} from './composables/useGlobalConfig'
+import {useGlobalDayConfig} from './composables/useGlobalDayConfig.ts'
 import {
   type DayOfWeek,
   type FrequencyType,
@@ -114,7 +114,7 @@ const selectedDays = ref<DayOfWeek[]>([])
 const configType = ref<ServiceConfigType>('exact_time')
 
 const individualDayConfig = useIndividualDayConfig()
-const globalConfig = useGlobalConfig()
+const globalConfig = useGlobalDayConfig()
 
 watchEffect(() => {
   if (!props.scheduleConfig) return
